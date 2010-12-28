@@ -1,6 +1,7 @@
 0.07
 		- Switch to using Capture::Tiny for Proc.pm, for Windows
 		  support.
+		- Prevent a warning from Handle.pm during global destruction.
 0.06
 		- Use Any::Moose to allow either Moose or Mouse.
 		- Switch to dzil.
