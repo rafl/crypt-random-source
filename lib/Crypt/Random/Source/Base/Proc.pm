@@ -5,7 +5,8 @@ use Any::Moose;
 
 extends qw(Crypt::Random::Source::Base::Handle);
 
-use IO::Handle;
+use Capture::Tiny qw(capture);
+use IO::File;
 
 use 5.008;
 
@@ -16,11 +17,19 @@ sub open_handle {
 
 	my $cmd = $self->command;
 	my @cmd = ref $cmd ? @$cmd : $cmd;
+        my $retval;
+        my ($stdout, $stderr) = capture { $retval = system(@cmd) };
+        chomp($stderr);
+        if ($retval) {
+            my $err = join(' ', @cmd) . ": $! ($?)";
+            if ($stderr) {
+                $err .= "\n$stderr";
+            }
+            die $err;
+        }
+        warn $stderr if $stderr;
 
-	open my $fh, "-|", @cmd
-		or die "open(@cmd|): $!";
-
-	bless $fh, "IO::Handle";
+	my $fh = IO::File->new(\$stdout, '<');
 
 	return $fh;
 }
