@@ -6,11 +6,26 @@ use Any::Moose;
 extends qw(Crypt::Random::Source::Base::Handle);
 
 use Capture::Tiny qw(capture);
+use File::Spec;
 use IO::File;
 
 use 5.008;
 
 has command => ( is => "rw", required => 1 );
+has search_path => ( is => 'rw', isa => 'Str', lazy_build => 1 );
+
+# This is a scalar so that people can customize it (which they would
+# particularly need to do on Windows).
+our $TAINT_PATH = 
+    '/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin';
+
+sub _build_search_path {
+    # In taint mode it's not safe to use $ENV{PATH}.
+    if (${^TAINT}) {
+        return $TAINT_PATH;
+    }
+    return $ENV{PATH};
+}
 
 sub open_handle {
 	my $self = shift;
@@ -18,6 +33,7 @@ sub open_handle {
 	my $cmd = $self->command;
 	my @cmd = ref $cmd ? @$cmd : $cmd;
         my $retval;
+        local $ENV{PATH} = $self->search_path;
         my ($stdout, $stderr) = capture { $retval = system(@cmd) };
         chomp($stderr);
         if ($retval) {
