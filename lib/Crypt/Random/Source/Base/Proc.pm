@@ -45,7 +45,7 @@ sub open_handle {
         }
         warn $stderr if $stderr;
 
-	my $fh = IO::File->new(\$stdout, '<');
+	open(my $fh, '<', \$stdout) || die $!;
 
 	return $fh;
 }

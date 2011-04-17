@@ -1,3 +1,5 @@
+0.08
+		- Fix Proc handles on Perl 5.8.
 0.07
 		- Switch to using Capture::Tiny for Proc.pm, for Windows
 		  support.
