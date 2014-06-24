@@ -85,8 +85,10 @@ sub _read_too_short {
 sub close {
 	my $self = shift;
 
-	if ( $self->has_handle ) {
-		$self->handle->close; # or die "close: $!"; # open "-|" returns exit status on close
+        # During global destruction, $self->handle can be undef already,
+        # so we need to also check if it is defined.
+	if ( $self->has_handle and $self->handle ) {
+		$self->handle->close or die "close: $!";
 		$self->clear_handle;
 	}
 }
